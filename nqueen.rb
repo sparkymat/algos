@@ -22,14 +22,13 @@ class Placement
   end
 end
 
-def place(placements, row)
-  debugger if placements == [3,6,2,7,-1,-1,-1,-1]
-  return placements if row >= BOARD_SIZE
+def place(board_size, placements, row)
+  return placements if row >= board_size
 
   # check if valid
   placed_positions = placements.map.with_index(0) {|c,i| Placement.new(row: i, column: c) }.select{|p| p.column != -1}
 
-  candidates = (0..BOARD_SIZE-1).map{|c| Placement.new(row: row,column: c) }
+  candidates = (0..board_size-1).map{|c| Placement.new(row: row,column: c) }
 
   allowed_candidates = candidates.reject do |candidate|
     placed_positions.map{|p| candidate.attacking?(p) }.reduce{ |c,i| c = c || i }
@@ -40,14 +39,26 @@ def place(placements, row)
   allowed_candidates.each do |ac|
     updated_placements = [] + placements
     updated_placements[ac.row] = ac.column
-    placed = place(updated_placements, row+1)
+    placed = place(board_size, updated_placements, row+1)
     return placed unless placed.nil?
   end
 
   return nil
 end
 
-placed = place([-1]*BOARD_SIZE, 0)
+def print_board(board_size, placements)
+  print '┌' + ('───┬' * (board_size-1)) + '───┐' + "\n"
+  (0..board_size-1).each do |row|
+    print '│   '*board_size + '│' + "\n"
+    if row != board_size - 1
+      print '├' + ('───┼' * (board_size-1)) + '───┤' + "\n"
+    end
+  end
+  print '└' + ('───┴' * (board_size-1)) + '───┘' + "\n"
+end
 
-pp placed.map.with_index(0) { |c,i| Placement.new(row: i, column: c) }
+placed = place(8, [-1]*8, 0)
 
+placements = placed.map.with_index(0) { |c,i| Placement.new(row: i, column: c) }
+
+print_board(8, placements)
